@@ -170,6 +170,50 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <!-- ID is arbitrary; we name it "shade-bench" -->
+                        <id>shade-bench</id>
+                        <!-- Run during the package phase -->
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Create a separate "dependency-reduced-pom.xml" to avoid reintroducing dependencies -->
+                            <createDependencyReducedPom>true</createDependencyReducedPom>
+
+                            <!-- (Optional) Set a custom final JAR name -->
+                             <finalName>jvector-bench-all</finalName>
+
+                            <!-- If your "bench" code relies on a main method in jvector-tests,
+                                 specify that class here. Or, if it's a JMH benchmark, you can set org.openjdk.jmh.Main. -->
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>io.github.jbellis.jvector.example.Bench</mainClass>
+                                </transformer>
+                            </transformers>
+
+                            <!-- (Optional) Filter out duplicate signatures, etc. -->
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
     <!-- Only include dependencies that are needed for the multirelease jar to run -->
