@@ -224,6 +224,10 @@ public class OnDiskGraphIndex implements ImmutableGraphIndex, AutoCloseable, Acc
      * @param offset the offset in bytes from the start of the file where the index starts.
      */
     public static OnDiskGraphIndex load(ReaderSupplier readerSupplier, long offset) {
+        return load(readerSupplier, offset, true);
+    }
+
+    public static OnDiskGraphIndex load(ReaderSupplier readerSupplier, long offset, boolean loadFromFooter) {
         try (var reader = readerSupplier.get()) {
             logger.debug("Loading OnDiskGraphIndex from offset={}", offset);
             var header = Header.load(reader, offset);
@@ -232,7 +236,7 @@ public class OnDiskGraphIndex implements ImmutableGraphIndex, AutoCloseable, Acc
                     header.common.version, header.common.dimension, header.common.entryNode, header.common.layerInfo.size());
             logger.debug("Position after reading header={}",
                     reader.getPosition());
-            if (header.common.version >= 5) {
+            if (header.common.version >= 5 && loadFromFooter) {
                 logger.debug("Version 5+ onwards uses a footer instead of header for metadata. Loading from footer");
                 return loadFromFooter(readerSupplier, reader.getPosition());
             } else {
